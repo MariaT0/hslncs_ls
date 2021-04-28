@@ -17,7 +17,7 @@ library(readr)
 The data used below is from the S5 table form Posfai et al 2018, and has been filtered to be only lncRNAs. The list of lncRNAs was taken from Kaessmann et al 2019.
 ```{r}
 #import data
-hslncs <- read_csv("lncs_s5.csv")
+hslncs <- read_csv("source_data/lncs_s5.csv")
 ```
 ```{r}
 #diagnose data, make sure looks ok
@@ -96,10 +96,10 @@ ggplot(degs) +
 # Import coding gene data
 ```{r}
 #import s5 table from plos pathogens paper
-hsgenes <- read_csv("S5_Table.csv")
+hsgenes <- read_csv("source_data/S5_Table.csv")
 
 #import kaessmar paper with lncRNAs and closest neighbor coding gene
-closest <- read_csv("select_Kaessmann2019.csv")
+closest <- read_csv("source_data/select_Kaessmann2019.csv")
 ```
 
 # Make new df with lncRNA and neihgbor info
