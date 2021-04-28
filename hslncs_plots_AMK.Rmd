@@ -1,0 +1,348 @@
+---
+title: "data viz"
+author: "Maria"
+date: "4/1/2021"
+output: html_document
+---
+
+# Human lncRNA expression during LS Plasmodium infection
+```{r}
+#load libraries
+library(tidyverse)
+library(pheatmap)
+library(RColorBrewer)
+library(readr)
+```
+
+The data used below is from the S5 table form Posfai et al 2018, and has been filtered to be only lncRNAs. The list of lncRNAs was taken from Kaessmann et al 2019.
+```{r}
+#import data
+hslncs <- read_csv("source_data/lncs_s5.csv")
+```
+
+```{r}
+hslncs_df <- as.data.frame(hslncs)
+```
+
+```{r}
+head(hslncs_df)
+```
+
+```{r}
+#diagnose data, make sure looks ok
+
+hslncs_df$timepoint <- as_factor(hslncs$timepoint)
+hslncs_df$timepoint <- fct_relevel(hslncs$timepoint, "early", "mid", "late")
+
+head(hslncs_df)
+
+```
+```{r}
+xx <- pull(yy, gene)
+```
+```{r}
+yy <- filter(hslncsc, diffexpressed == "UP" | diffexpressed == "DOWN")
+```
+
+```{r}
+is.character(closest_df$`LncRNA name`)
+```
+
+
+
+
+```{r}
+#remove duplicate rows
+hslncsc <- unique(hslncs_df)
+```
+
+
+
+
+
+
+Removing duplicate rows gotrid of ~4k rows.
+
+## Volcano Plots
+
+To generate a volcano plot, we first need to have a column in our results data indicating whether or not the gene is considered differentially expressed based on p-adjusted values.
+
+```{r}
+ggplot(hslncsc) +
+  aes(x = log2FC, y = -log10(padj)) +
+  geom_point() +
+  theme_bw() +
+  facet_grid(rows = vars(cell), cols = vars(timepoint))
+```
+This is good but I want to color the differentially expressed lncs. My threshold for log2Fc is low, ~1.4.
+```{r}
+# The significantly differentially expressed genes are the ones found in the upper-left and upper-right corners.
+# Add a column to the data frame to specify if they are UP- or DOWN- regulated (log2FoldChange respectively positive or negative)
+
+# add a column of NAs
+hslncsc$diffexpressed <- "NO"
+# if log2Foldchange > 0.5 and pvalue < 0.05, set as "UP" 
+hslncsc$diffexpressed[hslncsc$log2FC > 0.5 & hslncsc$padj < 0.05] <- "UP"
+# if log2Foldchange < -0.5 and pvalue < 0.05, set as "DOWN"
+hslncsc$diffexpressed[hslncsc$log2FC < -0.5 & hslncsc$padj < 0.05] <- "DOWN"
+
+```
+
+```{r}
+hslncsc
+```
+
+
+
+```{r}
+# Re-plot but this time color the points with "diffexpressed"
+ggplot(hslncsc) +
+  aes(x = log2FC, y = -log10(padj), color = diffexpressed, alpha = 0.05) +
+  geom_point() +
+  theme_gray() +
+  facet_grid(rows = vars(cell), cols = vars(timepoint), scales = "free_y") +
+  scale_color_manual(values = c("orange","gray","darkblue"))
+
+```
+## Top DEG genes
+
+```{r}
+filter
+```
+
+
+```{r}
+deg_gene_up <- hslncsc[hslncsc$diffexpressed == "UP",]
+deg_gene_down <- hslncsc[hslncsc$diffexpressed == "DOWN",]
+deg_gene <- rbind(deg_gene_up, deg_gene_down)
+```
+```{r}
+deg_gene
+```
+
+```{r}
+deg_gene_gene <- deg_gene$gene
+```
+
+
+```{r}
+
+#plot example dotplot for gene/neighbor graph
+ggplot(deg_gene) +
+  aes(x = log2FC, y = reorder(gene, log2FC), color = timepoint) +
+  geom_point(size = 2.5) +
+  facet_grid(rows = vars(cell)) +
+  theme_bw() +
+  theme(
+    aspect.ratio = 4 / 3, 
+    text = element_text(size = 11),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.y = element_line(colour = "gray", size = 0.25, linetype = "dashed"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+
+```
+# Import coding gene data
+```{r}
+#import s5 table from plos pathogens paper
+hsgenes <- read_csv("source_data/S5_Table.csv")
+hsgenes_df <- as.data.frame(hsgenes)
+#import kaessmar paper with lncRNAs and closest neighbor coding gene
+closest <- read_csv("source_data/select_Kaessmann2019.csv")
+closest_df <- as.data.frame(closest)
+```
+```{r}
+df[df$aged <= df$laclen, ] 
+```
+
+```{r}
+closest_df
+```
+```{r}
+deg_gene_gene
+```
+```{r}
+deg_gene_gene_fact <- as.factor(deg_gene_gene)
+```
+
+```{r}
+closest_df$`LncRNA name`
+```
+
+```{r}
+closest_df_na_omit <- na.omit(closest_df)
+```
+
+
+```{r}
+subset(closest_df_na_omit, 'LncRNA name' %in% deg_gene_gene_fact)
+```
+```{r}
+closest_final <- closest_df_na_omit[closest_df_na_omit$`LncRNA name` %in% deg_gene_gene_fact, ]
+```
+```{r}
+dup_removed <- closest_final[!duplicated(closest_final$`ENSEMBL75 id`), ]
+```
+
+```{r}
+dup_removed
+```
+
+```{r}
+dup_removed_ensembl <- as.factor(dup_removed$`ENSEMBL75 id`)
+```
+
+
+
+```{r}
+dup_removed_ensembl
+```
+
+
+```{r}
+setwd("~/R/hslncs_ls/source_data")
+```
+```{r}
+S5 <- read_csv("source_data/S5_Table.csv")
+```
+```{r}
+head(S5)
+```
+
+
+```{r}
+S5_Closest <- S5[S5$ensembl %in% dup_removed_ensembl, ]
+```
+
+```{r}
+S5_Closest %>%
+  mutate(gene = fct_relevel(gene, 
+            "RP11-415J8.5", "RP5-1033H22.2","RP11-525K10.3","LINC-PINT","CTB-171A8.1", "AC019181.2", "RP13-650J16.1" ,"RP5-1120P11.1","HOXD-AS1","RP11-626P14.2","RP11-798K3.2","AC114730.3","LINC00152","NEAT1","CDKN2B-AS1", "CASC19","RP6-99M1.2", "MIR29A","RP11-277P12.20","RP11-462L8.1","CTB-176F20.3","RP11-616M22.7","RP4-533D7.5", "AC004510.3")) %>%
+ggplot(aes(x = log2FC, y = gene, color = timepoint)) +
+  geom_point(size = 2.5) +
+  facet_grid(rows = vars(cell)) +
+  theme_bw() +
+  theme(
+    aspect.ratio = 4 / 3, 
+    text = element_text(size = 11),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.y = element_line(colour = "gray", size = 0.25, linetype = "dashed"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+```
+
+
+
+```{r}
+deg_gene$gene
+```
+
+```{r}
+merged <- rbind(deg_gene, S5_Closest)
+```
+
+```{r}
+deg_gene
+```
+
+
+```{r}
+S5_Closest
+```
+
+
+```{r}
+
+S5_Closest$diffexpressed <- "NO"
+
+```
+
+```{r}
+# if log2Foldchange > 0.5 and pvalue < 0.05, set as "UP" 
+S5_Closest$diffexpressed[S5_Closest$log2FC > 0.5 & S5_Closest$padj < 0.05] <- "UP"
+# if log2Foldchange < -0.5 and pvalue < 0.05, set as "DOWN"
+S5_Closest$diffexpressed[S5_Closest$log2FC < -0.5 & S5_Closest$padj < 0.05] <- "DOWN"
+```
+
+```{r}
+Final <- rbind(deg_gene, S5_Closest)
+```
+
+```{r}
+
+```
+
+```{r}
+ab <- rbind(a, b)
+```
+
+```{r}
+Final1 <- cbind(Final, ab)
+```
+
+
+```{r}
+a <- data.frame("x" = rep("LncRNA", times=26))
+```
+
+```{r}
+71:140
+```
+
+```{r}
+Final1 %>%
+  mutate(gene = fct_relevel(gene, 
+            "RP11-415J8.5", "RP5-1033H22.2","RP11-525K10.3","LINC-PINT","CTB-171A8.1", "AC019181.2", "RP13-650J16.1" ,"RP5-1120P11.1","HOXD-AS1","RP11-626P14.2","RP11-798K3.2","AC114730.3","LINC00152","NEAT1","CDKN2B-AS1", "CASC19","RP6-99M1.2", "MIR29A","RP11-277P12.20","RP11-462L8.1","CTB-176F20.3","RP11-616M22.7","RP4-533D7.5", "AC004510.3")) %>%
+ggplot(aes(x = log2FC, y = gene, color = timepoint)) +
+  geom_point(size = 2.5) +
+  facet_grid(vars(cell),vars(x)) +
+  theme_bw() +
+  theme(
+    aspect.ratio = 4 / 3, 
+    text = element_text(size = 11),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.y = element_line(colour = "gray", size = 0.25, linetype = "dashed"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+```
+
+```{r}
+Final1$x
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
