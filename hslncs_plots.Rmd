@@ -81,10 +81,11 @@ glimpse(degs)
 ggplot(degs) +
   aes(x = log2FC, y = reorder(gene, log2FC), color = timepoint) +
   geom_point(size = 2.5) +
-  facet_grid(rows = vars(cell)) +
+  facet_grid(cols = vars(cell)) +
+  ylab("lncRNA") +
   theme_gray() +
   theme(
-    aspect.ratio = 4 / 3, 
+    aspect.ratio = 3 / 1, 
     text = element_text(size = 11),
     panel.grid.minor.y = element_blank(),
     panel.grid.major.y = element_line(colour = "gray", size = 0.25, linetype = "dashed"),
