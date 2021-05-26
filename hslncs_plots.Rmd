@@ -85,7 +85,7 @@ ggplot(degs) +
   ylab("lncRNA") +
   theme_gray() +
   theme(
-    aspect.ratio = 3 / 1, 
+    aspect.ratio = 1 / 1, 
     text = element_text(size = 11),
     panel.grid.minor.y = element_blank(),
     panel.grid.major.y = element_line(colour = "gray", size = 0.25, linetype = "dashed"),
@@ -93,6 +93,7 @@ ggplot(degs) +
     panel.grid.minor.x = element_blank()
   )
 
+ggsave("hslncs_deg.pdf")
 ```
 # Import coding gene data
 ```{r}
